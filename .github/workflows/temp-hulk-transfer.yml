@@ -1,0 +1,34 @@
+name: Temporary Hulk Patch Transfer
+
+on:
+  push:
+    paths:
+      - .github/workflows/temp-hulk-transfer.yml
+
+permissions:
+  contents: write
+
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download verified patch
+        run: |
+          set -euo pipefail
+          FILE="Hulk-PMS-v2.24.73-Employee-Add-Success-Password-Eye-Patch.zip"
+          curl --fail --location --retry 4 --retry-all-errors "https://tmpfiles.org/dl/wlAyMtZjuctp/hulk-pms-v2.24.73-employee-add-success-password-eye-patch.zip" --output "$FILE"
+          test "$(stat -c%s "$FILE")" -eq 195090
+          echo '886b258d47a315daa9df5f1110e73c9629860b7dd4c2b6abfb90db16a6e2c044  Hulk-PMS-v2.24.73-Employee-Add-Success-Password-Eye-Patch.zip' | sha256sum --check
+
+      - name: Publish patch temporarily
+        run: |
+          set -euo pipefail
+          git config user.name "Hulk PMS Transfer"
+          git config user.email "build@hulkmarketing.co.uk"
+          git add Hulk-PMS-v2.24.73-Employee-Add-Success-Password-Eye-Patch.zip
+          git commit -m "Temporary Hulk employee patch transfer"
+          git push origin HEAD:main
